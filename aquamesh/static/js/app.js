@@ -12,7 +12,10 @@ function setView(v){view=v;if($('tSch'))$('tSch').classList.toggle('on',v=='sch'
   }else $('cam').removeAttribute('src');
 }
 $('bVer').onclick=async()=>{$('evres').textContent=JSON.stringify(await api('/api/verify'),null,1)};
-$('bTam').onclick=async()=>{const r=await api('/api/tamper_demo');$('evres').textContent='Edited record #'+r.edited_record+' in a COPY of the log.\nBefore edit: '+JSON.stringify(r.before)+'\nAfter edit:  '+JSON.stringify(r.after)+'\n→ chain verification '+(r.after&&!r.after.ok?'DETECTED the tampering at record '+r.after.first_bad_id:'did not detect (log too short?)')};
+$('bTam').onclick=async()=>{const r=await api('/api/tamper_demo');$('evres').textContent='Edited record #'+r.edited_record+' in a COPY of the log.
+Before edit: '+JSON.stringify(r.before)+'
+After edit:  '+JSON.stringify(r.after)+'
+→ chain verification '+(r.after&&!r.after.ok?'DETECTED the tampering at record '+r.after.first_bad_id:'did not detect (log too short?)')};
 $('bAud').onclick=async()=>{$('evres').textContent='Random audit: '+JSON.stringify(await api('/api/audit'),null,1)};
 document.querySelectorAll('[data-cal]').forEach(b=>b.onclick=async()=>{const [s,p]=b.dataset.cal.split(',');const r=await api('/api/calibrate',{sensor:s,point:p});if(r.error)alert(r.error)});
 $('csvLink').onclick=async e=>{ if(!USE_MOCK)return; e.preventDefault();
@@ -33,7 +36,8 @@ async function polh(){const h=await api('/api/history?n=900');if(h&&!h.error){H=
 async function slow(){if(S){evlog();why()}}
 
 (async()=>{
-  await detectBackend();\n  if($('cam')&&!USE_MOCK)$('cam').src=(CFG.baseUrl||'')+'/stream.mjpg?'+Date.now();
+  await detectBackend();
+  if($('cam')&&!USE_MOCK)$('cam').src=(CFG.baseUrl||'')+'/stream.mjpg?'+Date.now();
   if(USE_MOCK)MockBackend.start({speed:CFG.mockSpeed||4,scenario:CFG.mockStartScenario||'heavy_rain'});
   poll();polh();setInterval(poll,1000);setInterval(polh,2000);setInterval(slow,3000);
   setInterval(()=>{if(S&&view=='sch')schematic()},250);

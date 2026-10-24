@@ -2,11 +2,12 @@
 import csv
 import io
 import json
+import mimetypes
 import os
 import threading
 import time
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 
 from .sim import SCENARIOS
 
@@ -88,6 +89,18 @@ def make_handler(ctx):
                             continue
                         last = seq
                         self.wfile.write(b"--f\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n" % len(b) + b + b"\r\n")
+                elif u.path.startswith(("/css/", "/js/", "/assets/")):
+                    # Serve dashboard assets from the package's static directory.
+                    # Resolve and validate the path to prevent traversal outside STATIC.
+                    rel = unquote(u.path.lstrip("/"))
+                    target = os.path.realpath(os.path.join(STATIC, rel))
+                    if not target.startswith(os.path.realpath(STATIC) + os.sep) or not os.path.isfile(target):
+                        self._send({"error": "not found", "path": u.path}, code=404)
+                    else:
+                        ctype = mimetypes.guess_type(target)[0] or "application/octet-stream"
+                        if ctype.startswith("text/") or ctype in ("application/javascript", "application/json"):
+                            ctype += "; charset=utf-8"
+                        self._send(open(target, "rb").read(), ctype)
                 elif u.path == "/api/export.csv":
                     h = e.history(1500)
                     keys = sorted(h)
