@@ -49,6 +49,17 @@ def main():
     if a.sim:
         from aquamesh.sim import Sim, SimRunner
         ctx.sim = Sim(None, ctx.clock)
+        # In simulation mode, keep sensor/decision values simulated but still
+        # start the physical camera unless --no-camera was explicitly supplied.
+        # This ensures /stream.mjpg exists when the dashboard is run with --sim.
+        if not a.no_camera:
+            try:
+                from aquamesh.vision import Vision
+                ctx.vision = Vision()
+                print("Camera vision thread started in simulation mode.", flush=True)
+            except Exception as ex:
+                ctx.vision = None
+                print("Camera unavailable in simulation mode: %s" % (ex,), flush=True)
         eng = Engine(cfg, ctx.clock, ctx.ev, vision_get=ctx.sim.vision_state, gw_status=ctx.sim.gateway_status, mode=mode)
         ctx.sim.ingest = eng.ingest_line
         from aquamesh import kb

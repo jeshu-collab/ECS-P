@@ -8,7 +8,7 @@ Design and science: see APPROACH.txt.
 QUICK START (2 minutes, no hardware - the demo)
 -----------------------------------------------
   cd aquamesh-mvp
-  python3 run.py --sim --speed 6
+  python3 run.py --sim --speed 6  # simulated sensors + live camera (if available)
   open http://localhost:8000   (from another machine: http://<pi-ip>:8000)
 Pick scenarios in the "Experiments" panel. The header shows SIMULATED so nobody mistakes it for live.
 

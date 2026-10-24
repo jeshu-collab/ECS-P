@@ -62,7 +62,7 @@ STEP-BY-STEP (Raspberry Pi OS)
      Then POST to /api/learn to learn a dry baseline.
 9. If the serial gateway cannot auto-detect the port, explicitly use --serial.
    To run a presentation without hardware use:
-     python3 run.py --sim --scenario heavy_rain --speed 4
+     python3 run.py --sim --scenario heavy_rain --speed 4  # simulated sensors + live camera (if available)
    This mode is simulated; it does not use real sensor packets or the live camera.
 10. Run tests from project root:
       python3 -m unittest discover -s tests
