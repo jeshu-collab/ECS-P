@@ -1,4 +1,0 @@
-# Raspberry Pi OS (apt) - no pip needed:
-#   sudo apt install -y python3-opencv python3-picamera2 python3-numpy python3-serial
-# Reasoning engine itself is pure standard library (Python 3.9+).
-# Simulator / replay / tests need nothing extra.  Vision needs numpy + opencv.  Live LoRa needs pyserial.
