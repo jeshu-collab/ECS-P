@@ -1,0 +1,176 @@
+const express = require("express");
+
+const app = express();
+const PORT = 3000;
+const SITE_DIR = __dirname;
+const startedAt = Date.now();
+
+app.use(express.json({ limit: "64kb" }));
+
+const nodes = {
+  "RAIN-01": createNode("FLOOD01", 14),
+  "DRAIN-01": createNode(null, 11, false),
+  "AREA-01": createNode("GAS01", 7),
+  "RIVER-01": createNode(null, 4, false),
+};
+
+const gateway = {
+  serial_port: "HTTP POST",
+  serial_connected: false,
+  packets_total: 0,
+  bad_lines: 0,
+  last_rx_age_s: null,
+  uptime_s: 0,
+  cpu_temp_c: null,
+  disk_used_pct: null,
+  buzzer_available: false,
+  buzzer_on: false,
+  system_uptime_s: null,
+  baud: null,
+};
+
+function createNode(hwId, elevation, installed = true) {
+  return {
+    elevation_m: elevation,
+    installed,
+    hw_id: hwId,
+    health: installed ? "NO_DATA" : "NO_SENSOR",
+    age_s: null,
+    status: null,
+    pkt: null,
+    received: 0,
+    packet_loss_pct: 0,
+    rssi_dbm: null,
+    snr_db: null,
+  };
+}
+
+function parsePayload(payload) {
+  if (typeof payload !== "string" || payload.trim() === "") {
+    throw new Error("payload must be a non-empty string");
+  }
+
+  const parsed = {};
+  for (const part of payload.split(",")) {
+    const separator = part.indexOf("=");
+    if (separator < 1) continue;
+    const key = part.slice(0, separator).trim().toUpperCase();
+    const value = part.slice(separator + 1).trim();
+    if (key) parsed[key] = value;
+  }
+
+  if (!parsed.FROM) {
+    throw new Error("payload must include FROM");
+  }
+
+  for (const key of ["RAIN", "HX", "MQ", "SOIL", "PKT", "RSSI", "SNR"]) {
+    if (parsed[key] !== undefined && parsed[key] !== "") {
+      const number = Number(parsed[key]);
+      if (!Number.isFinite(number)) {
+        throw new Error(`${key} must be numeric`);
+      }
+      parsed[key] = number;
+    }
+  }
+  return parsed;
+}
+
+function healthFor(node) {
+  if (!node.installed) return "NO_SENSOR";
+  if (node.lastReceivedAt === undefined) return "NO_DATA";
+  const age = (Date.now() - node.lastReceivedAt) / 1000;
+  return age <= 15 ? "ONLINE" : age <= 60 ? "STALE" : "OFFLINE";
+}
+
+function updateNode(node, data, prediction) {
+  const now = Date.now();
+  const previousPacket = node.pkt;
+  node.lastReceivedAt = now;
+  node.age_s = 0;
+  node.health = "ONLINE";
+  node.status = data.STATUS || "NORMAL";
+  node.pkt = data.PKT ?? node.pkt;
+  node.received += 1;
+  node.rssi_dbm = data.RSSI ?? null;
+  node.snr_db = data.SNR ?? null;
+
+  if (node.hw_id === "FLOOD01") {
+    node.rain_raw = data.RAIN ?? null;
+    node.rain_mm_h = data.RAIN ?? null;
+    node.wetness_pct = data.RAIN == null ? null : Math.max(0, Math.min(100, data.RAIN));
+    node.pressure_raw = data.HX ?? null;
+    node.alert_raw_threshold = 500;
+    node.ml_prediction = prediction || node.ml_prediction || null;
+  } else if (node.hw_id === "GAS01") {
+    node.soil_raw = data.SOIL ?? null;
+    node.soil_moisture_pct = data.SOIL ?? null;
+    node.gas_raw = data.MQ ?? null;
+    node.gas_alert_threshold = 1500;
+    node.gas_alert = (data.MQ ?? 0) > 1500;
+  }
+
+  if (typeof previousPacket === "number" && typeof node.pkt === "number" && node.pkt > previousPacket + 1) {
+    node.packet_loss_pct = Math.min(100, node.packet_loss_pct + (node.pkt - previousPacket - 1));
+  }
+}
+
+function snapshot() {
+  const now = Date.now();
+  const snapshotNodes = {};
+  for (const [id, node] of Object.entries(nodes)) {
+    const copy = { ...node };
+    if (copy.lastReceivedAt !== undefined) {
+      copy.age_s = (now - copy.lastReceivedAt) / 1000;
+      copy.health = healthFor(copy);
+    }
+    delete copy.lastReceivedAt;
+    snapshotNodes[id] = copy;
+  }
+
+  gateway.uptime_s = Math.floor((now - startedAt) / 1000);
+  gateway.last_rx_age_s = gateway.lastReceivedAt === undefined
+    ? null
+    : (now - gateway.lastReceivedAt) / 1000;
+
+  return {
+    timestamp: new Date(now).toISOString(),
+    server_time: now / 1000,
+    mode: "LIVE",
+    nodes: snapshotNodes,
+    events: [],
+    gateway: { ...gateway },
+  };
+}
+
+app.post("/api/aquamesh", (req, res) => {
+  const { node_id: nodeId, payload, ml_prediction: prediction, buzzer_on: buzzerOn } = req.body || {};
+  const node = nodeId === "FLOOD01" ? nodes["RAIN-01"] : nodeId === "GAS01" ? nodes["AREA-01"] : null;
+
+  if (!node) {
+    return res.status(400).json({ error: "node_id must be FLOOD01 or GAS01" });
+  }
+
+  try {
+    const parsed = parsePayload(payload);
+    updateNode(node, parsed, typeof prediction === "string" ? prediction : null);
+    gateway.packets_total += 1;
+    gateway.serial_connected = true;
+    gateway.lastReceivedAt = Date.now();
+    gateway.buzzer_on = Boolean(buzzerOn);
+    return res.status(200).json({ ok: true, state: snapshot() });
+  } catch (error) {
+    gateway.bad_lines += 1;
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+app.get("/api/twin/state", (_req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json(snapshot());
+});
+
+app.use(express.static(SITE_DIR));
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`AquaMesh server listening on http://0.0.0.0:${PORT}`);
+});

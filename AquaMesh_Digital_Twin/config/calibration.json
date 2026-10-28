@@ -1,0 +1,36 @@
+{
+  "version": "cal-0.1-UNVERIFIED",
+  "note": "Raw ADC is shown as raw until 'verified' is true. Edit with real dry/wet readings (see README, section Calibration).",
+  "rain": {
+    "verified": false,
+    "wet_on_raw": 100,
+    "heavy_raw": 1000,
+    "contact_raw": 500,
+    "mm_per_hour_at_4095": null
+  },
+  "soil": {
+    "verified": false,
+    "direction": "unknown",
+    "dry_raw": null,
+    "wet_raw": null,
+    "saturated_pct": 70
+  },
+  "gas": {
+    "alert_raw": 1500,
+    "rising_raw_per_min": 60
+  },
+  "hx": {
+    "verified": false,
+    "note": "HX711 count has no established physical unit; never shown as pressure/depth"
+  },
+  "limits": {
+    "online_s": 15,
+    "stale_s": 60,
+    "loss_high_pct": 30
+  },
+  "hydro": {
+    "drain_alert_cm": 9,
+    "river_alert_cm": 20,
+    "flow_low_lpm": 5
+  }
+}

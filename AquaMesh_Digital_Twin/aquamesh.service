@@ -1,0 +1,19 @@
+# Autostart on boot:
+#   sudo cp aquamesh.service /etc/systemd/system/
+#   (edit User= and the two paths below if yours differ)
+#   sudo systemctl daemon-reload && sudo systemctl enable --now aquamesh
+#   journalctl -u aquamesh -f        # live log
+[Unit]
+Description=AquaMesh gateway + dashboard
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/AquaMesh_Digital_Twin
+ExecStart=/usr/bin/python3 /home/pi/AquaMesh_Digital_Twin/aquamesh_pi.py
+Restart=always
+RestartSec=3
+SupplementaryGroups=dialout gpio
+
+[Install]
+WantedBy=multi-user.target

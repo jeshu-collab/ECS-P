@@ -1,0 +1,520 @@
+{
+ "timestamp": "2026-10-21T04:30:15+0000",
+ "server_time": 1200.0,
+ "mode": "SIMULATED",
+ "provenance_default": "SIMULATED",
+ "nodes": {
+  "RAIN-01": {
+   "hw_id": "FLOOD01",
+   "elevation_m": 14,
+   "installed": true,
+   "health": "ONLINE",
+   "age_s": 0.0,
+   "status": "ALERT",
+   "pkt": 40,
+   "received": 40,
+   "packet_loss_pct": 0.0,
+   "rssi_dbm": null,
+   "snr_db": null,
+   "vbat": null,
+   "rain_raw": 1946,
+   "pressure_raw": 192057,
+   "alert_raw_threshold": 500,
+   "rain_mm_h": 57.0,
+   "wetness_mean_30": 1894.6,
+   "wetness_peak_30": 1976,
+   "wetness_frac_60": 1.0
+  },
+  "DRAIN-01": {
+   "hw_id": "DRAIN01",
+   "elevation_m": 11,
+   "installed": true,
+   "health": "ONLINE",
+   "age_s": 0.0,
+   "status": "NORMAL",
+   "pkt": 40,
+   "received": 40,
+   "packet_loss_pct": 0.0,
+   "rssi_dbm": null,
+   "snr_db": null,
+   "vbat": null,
+   "drain_level_cm": 14,
+   "drain_flow_lpm": 10
+  },
+  "AREA-01": {
+   "hw_id": "GAS01",
+   "elevation_m": 7,
+   "installed": true,
+   "health": "ONLINE",
+   "age_s": 0.0,
+   "status": "NORMAL",
+   "pkt": 40,
+   "received": 40,
+   "packet_loss_pct": 0.0,
+   "rssi_dbm": null,
+   "snr_db": null,
+   "vbat": null,
+   "soil_raw": 1996,
+   "soil_moisture_pct": 58.2,
+   "gas_raw": 813,
+   "gas_alert_threshold": 1500,
+   "gas_alert": false,
+   "overflow": 1
+  },
+  "RIVER-01": {
+   "hw_id": "RIVER01",
+   "elevation_m": 4,
+   "installed": true,
+   "health": "ONLINE",
+   "age_s": 0.0,
+   "status": "NORMAL",
+   "pkt": 40,
+   "received": 40,
+   "packet_loss_pct": 0.0,
+   "rssi_dbm": null,
+   "snr_db": null,
+   "vbat": null,
+   "river_level_cm": 8
+  }
+ },
+ "assessment": {
+  "kb_version": "kb-1.0",
+  "calibration": "cal-SIM-demo",
+  "flood_state": "CRITICAL",
+  "gas_state": "NORMAL",
+  "health": "OK",
+  "risk_index": 100,
+  "risk_index_label": "LIVE HEURISTIC SCORE (not a probability)",
+  "evidence_coverage_pct": 100,
+  "candidate": "CRITICAL",
+  "hysteresis": {
+   "flood": {
+    "state": "CRITICAL",
+    "pending": null,
+    "pending_for_s": null,
+    "needs_s": null
+   },
+   "gas": {
+    "state": "NORMAL",
+    "pending": null,
+    "pending_for_s": null,
+    "needs_s": null
+   }
+  },
+  "quality": {
+   "rain": "CALIBRATED",
+   "soil": "CALIBRATED",
+   "gas": "THRESHOLD_FROM_FIRMWARE",
+   "hx": "UNCALIBRATED_RAW",
+   "drain": "SIMULATED",
+   "river": "SIMULATED"
+  },
+  "not_assessable": [],
+  "alerts": [
+   {
+    "level": "CRITICAL",
+    "domain": "flood",
+    "goal": "flood_critical",
+    "title": "Flood critical",
+    "reasons": [
+     "OVERFLOW_CONTACT"
+    ]
+   }
+  ],
+  "indicators": [
+   {
+    "label": "Rain wetness (30 s mean, raw ADC)",
+    "value": 1894.6,
+    "unit": "raw",
+    "type": "SIMULATED"
+   },
+   {
+    "label": "Rain wetness (30 s peak, raw ADC)",
+    "value": 1976,
+    "unit": "raw",
+    "type": "SIMULATED"
+   },
+   {
+    "label": "Rainfall rate",
+    "value": 57.0,
+    "unit": "mm/h",
+    "type": "ESTIMATED",
+    "why": null
+   },
+   {
+    "label": "Soil moisture",
+    "value": 58.2,
+    "unit": "%",
+    "type": "ESTIMATED",
+    "why": null
+   },
+   {
+    "label": "Gas slope",
+    "value": 12.9,
+    "unit": "raw/min",
+    "type": "ESTIMATED"
+   },
+   {
+    "label": "Drain / river level",
+    "value": null,
+    "unit": "cm",
+    "type": "SIMULATED",
+    "why": ""
+   },
+   {
+    "label": "30-second flood probability",
+    "value": null,
+    "unit": "%",
+    "type": "UNAVAILABLE",
+    "why": "no validated predictor (needs labelled flood data)"
+   }
+  ],
+  "hypotheses": [
+   {
+    "id": "HEAVY_RAIN",
+    "label": "Sustained heavy rain",
+    "support": 98.1,
+    "for": [
+     {
+      "fact": "rain_wet",
+      "value": "T",
+      "lr": 4.0
+     },
+     {
+      "fact": "rain_persistent",
+      "value": "T",
+      "lr": 5.0
+     },
+     {
+      "fact": "rain_heavy",
+      "value": "T",
+      "lr": 3.0
+     },
+     {
+      "fact": "rain_contact",
+      "value": "T",
+      "lr": 3.0
+     }
+    ],
+    "against": [
+     {
+      "fact": "rain_intensifying",
+      "value": "F",
+      "lr": 0.8
+     },
+     {
+      "fact": "soil_wet_high",
+      "value": "F",
+      "lr": 0.7
+     }
+    ],
+    "evidence_used": 6
+   },
+   {
+    "id": "DRAIN_BLOCKAGE",
+    "label": "Blocked drain",
+    "support": 1.2,
+    "for": [
+     {
+      "fact": "drain_level_high",
+      "value": "T",
+      "lr": 6.0
+     },
+     {
+      "fact": "rain_wet",
+      "value": "T",
+      "lr": 2.0
+     }
+    ],
+    "against": [
+     {
+      "fact": "drain_flow_low",
+      "value": "F",
+      "lr": 0.4
+     }
+    ],
+    "evidence_used": 3
+   },
+   {
+    "id": "SPLASH",
+    "label": "Light rain or splash / dew",
+    "support": 0.4,
+    "for": [
+     {
+      "fact": "rain_wet",
+      "value": "T",
+      "lr": 4.0
+     }
+    ],
+    "against": [
+     {
+      "fact": "rain_persistent",
+      "value": "T",
+      "lr": 0.4
+     },
+     {
+      "fact": "rain_heavy",
+      "value": "T",
+      "lr": 0.3
+     },
+     {
+      "fact": "rain_contact",
+      "value": "T",
+      "lr": 0.4
+     }
+    ],
+    "evidence_used": 4
+   },
+   {
+    "id": "RAIN_SENSOR_FAULT",
+    "label": "Rain sensor fault",
+    "support": 0.2,
+    "for": [],
+    "against": [
+     {
+      "fact": "rain_sensor_valid",
+      "value": "T",
+      "lr": 0.9
+     }
+    ],
+    "evidence_used": 1
+   },
+   {
+    "id": "GAS_HAZARD",
+    "label": "Gas leak / gas hazard",
+    "support": 0.1,
+    "for": [],
+    "against": [
+     {
+      "fact": "gas_sustained",
+      "value": "F",
+      "lr": 0.4
+     },
+     {
+      "fact": "gas_rising",
+      "value": "F",
+      "lr": 0.8
+     },
+     {
+      "fact": "gas_sensor_valid",
+      "value": "T",
+      "lr": 0.9
+     }
+    ],
+    "evidence_used": 3
+   },
+   {
+    "id": "DRY",
+    "label": "Dry / no rain at the node",
+    "support": 0.0,
+    "for": [
+     {
+      "fact": "ground_saturated",
+      "value": "F",
+      "lr": 1.1
+     }
+    ],
+    "against": [
+     {
+      "fact": "rain_wet",
+      "value": "T",
+      "lr": 0.05
+     },
+     {
+      "fact": "rain_contact",
+      "value": "T",
+      "lr": 0.05
+     },
+     {
+      "fact": "rain_persistent",
+      "value": "T",
+      "lr": 0.1
+     }
+    ],
+    "evidence_used": 4
+   },
+   {
+    "id": "NODE_OUTAGE",
+    "label": "Node or radio outage",
+    "support": 0.0,
+    "for": [],
+    "against": [
+     {
+      "fact": "rain_node_fresh",
+      "value": "T",
+      "lr": 0.2
+     },
+     {
+      "fact": "area_node_fresh",
+      "value": "T",
+      "lr": 0.3
+     },
+     {
+      "fact": "link_loss_high",
+      "value": "F",
+      "lr": 0.8
+     },
+     {
+      "fact": "gateway_uart_ok",
+      "value": "T",
+      "lr": 0.9
+     }
+    ],
+    "evidence_used": 4
+   }
+  ],
+  "pattern": {
+   "status": "MATCH",
+   "best": {
+    "id": "RAMP_UP",
+    "label": "Building storm (steady increase)",
+    "similarity": 79.2,
+    "shape": [
+     0.0,
+     0.09090909090909091,
+     0.18181818181818182,
+     0.2727272727272727,
+     0.36363636363636365,
+     0.45454545454545453,
+     0.5454545454545454,
+     0.6363636363636364,
+     0.7272727272727273,
+     0.8181818181818182,
+     0.9090909090909091,
+     1.0
+    ]
+   }
+  },
+  "metrics": {
+   "FLOOD01_age_s": 0.0,
+   "GAS01_age_s": 0.0,
+   "rain_raw": 1946,
+   "rain_wet_frac_60": 1.0,
+   "rain_wet_frac_180": 0.78,
+   "rain_mean_30": 1894.6,
+   "rain_mean_prev_30": 1470.5,
+   "rain_peak_30": 1976,
+   "rain_mm_h": 57.0,
+   "soil_raw": 1996,
+   "soil_pct": 58.2,
+   "gas_raw": 813,
+   "gas_slope_per_min": 12.9,
+   "DRAIN01_LVL": 14,
+   "DRAIN01_FLOW": 10,
+   "RIVER01_LVL": 8
+  },
+  "graph": {
+   "nodes": "[... 44 nodes ...]",
+   "edges": "[...]",
+   "rules": "[...]"
+  },
+  "trace": [
+   {
+    "round": 1,
+    "fact": "rain_wet_confirmed",
+    "from": "U",
+    "to": "T",
+    "by": [
+     "R01"
+    ]
+   },
+   {
+    "round": 1,
+    "fact": "rain_sustained",
+    "from": "U",
+    "to": "T",
+    "by": [
+     "R02"
+    ]
+   },
+   {
+    "round": 1,
+    "fact": "rain_intensifying_confirmed",
+    "from": "U",
+    "to": "F",
+    "by": [
+     "R03"
+    ]
+   }
+  ],
+  "rounds": 2,
+  "assessment_id": 23,
+  "hydro": {
+   "edges": [
+    {
+     "from": "RAIN-01",
+     "to": "DRAIN-01",
+     "state": "ACTIVE",
+     "basis": "rain_wet_confirmed"
+    },
+    {
+     "from": "DRAIN-01",
+     "to": "AREA-01",
+     "state": "ACTIVE",
+     "basis": "drainage_stressed"
+    },
+    {
+     "from": "AREA-01",
+     "to": "RIVER-01",
+     "state": "ACTIVE",
+     "basis": "river_backwater / overflow"
+    }
+   ]
+  },
+  "mode": "SIMULATED",
+  "visual": {
+   "rain_intensity": 100,
+   "basis": "30 s mean of raw wetness, visual only"
+  }
+ },
+ "gateway": {
+  "serial_connected": true,
+  "packets_total": 160,
+  "bad_lines": 0,
+  "duplicates": 0,
+  "last_rx_age_s": 0.0,
+  "uptime_s": 200
+ },
+ "events": [
+  {
+   "t": 1180.0,
+   "title": "FLOOD WARNING -> CRITICAL",
+   "detail": "OVERFLOW_CONTACT",
+   "severity": "critical",
+   "id": 5,
+   "goal": "flood_critical"
+  },
+  {
+   "t": 1100.0,
+   "title": "FLOOD WATCH -> WARNING",
+   "detail": "RAIN_CONFIRMED, RAIN_SUSTAINED, NODE_RAIN_ALERT",
+   "severity": "warn",
+   "id": 4,
+   "goal": "flood_warning"
+  },
+  {
+   "t": 1080.0,
+   "title": "FLOOD NORMAL -> WATCH",
+   "detail": "RAIN_CONFIRMED, RAIN_SUSTAINED, RAINFALL_TREND_RISING",
+   "severity": "warn",
+   "id": 3,
+   "goal": "flood_watch"
+  },
+  {
+   "t": 1035.0,
+   "title": "GAS UNASSESSED -> NORMAL",
+   "detail": "GAS_NORMAL",
+   "severity": "info",
+   "id": 2,
+   "goal": "gas_normal"
+  },
+  {
+   "t": 1020.0,
+   "title": "FLOOD UNASSESSED -> NORMAL",
+   "detail": "FLOOD_NORMAL",
+   "severity": "info",
+   "id": 1,
+   "goal": "flood_normal"
+  }
+ ]
+}

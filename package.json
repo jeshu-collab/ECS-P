@@ -1,0 +1,11 @@
+{
+  "name": "aquamesh-live",
+  "version": "2.0.0",
+  "private": true,
+  "description": "AquaMesh evidence-driven flood digital twin. The backend is Python; there is no Node server any more.",
+  "scripts": {
+    "start": "python3 AquaMesh_Digital_Twin/aquamesh_pi.py",
+    "demo": "python3 AquaMesh_Digital_Twin/aquamesh_pi.py --sim storm",
+    "test": "python3 AquaMesh_Digital_Twin/tests/test_engine.py"
+  }
+}

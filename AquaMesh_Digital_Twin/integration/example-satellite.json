@@ -1,0 +1,7 @@
+{
+  "source": "your proxy for GPM IMERG / INSAT-3DR rainfall",
+  "time": "2026-10-12T14:30:00+05:30",
+  "rain_mm_h": 7.8,
+  "cloud_top_c": -62,
+  "cloud_cover_pct": 88
+}

@@ -1,0 +1,10 @@
+{
+  "note": "Verified facts only. null = unknown. 'installed' controls whether a node's rules are active or reported as NOT_INSTALLED.",
+  "nodes": {
+    "RAIN-01":  { "hw_id": "FLOOD01", "installed": true,  "elevation_m": 14, "role": "rain + HX711", "downstream": "DRAIN-01" },
+    "DRAIN-01": { "hw_id": "DRAIN01", "installed": false, "elevation_m": 11, "role": "drain level/flow", "downstream": "AREA-01", "capacity_cm": null },
+    "AREA-01":  { "hw_id": "GAS01",   "installed": true,  "elevation_m": 7,  "role": "soil + chemical + MPU6050", "downstream": "RIVER-01" },
+    "RIVER-01": { "hw_id": "RIVER01", "installed": false, "elevation_m": 4,  "role": "river level", "downstream": null }
+  },
+  "real_path": ["ESP32 node", "LoRa 433 MHz", "TTGO receiver", "USB serial", "Raspberry Pi"]
+}

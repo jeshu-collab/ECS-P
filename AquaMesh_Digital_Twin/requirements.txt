@@ -1,0 +1,4 @@
+pyserial
+gpiozero
+google-genai
+python-dotenv

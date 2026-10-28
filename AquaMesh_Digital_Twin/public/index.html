@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AquaMesh | Flood Intelligence Twin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="reasoning.css">
+<link rel="stylesheet" href="control-center.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Views">
+    <div class="mark"><svg viewBox="0 0 40 40"><path d="M5 25c5-10 9-10 14 0s9 10 16 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M8 14h24M12 9h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="30" r="3" fill="#e4a342"/></svg></div>
+    <div class="keys">
+      <button class="key active" data-k="1"><b>1</b><span>Overview</span></button>
+      <button class="key" data-k="2"><b>2</b><span>Twin</span></button>
+      <button class="key" data-k="3"><b>3</b><span>Nodes</span></button>
+      <button class="key" data-k="4"><b>4</b><span>Lab</span></button>
+      <button class="key" data-k="5"><b>5</b><span>Trend</span></button>
+      <button class="key" data-k="6"><b>6</b><span>Alerts</span></button>
+      <button class="key" data-k="7"><b>7</b><span>Infer</span></button>
+      <button class="key" data-k="8"><b>8</b><span>Sky</span></button>
+      <button class="key" data-k="9"><b>9</b><span>Reason</span></button>
+    </div>
+    <div class="beacon"><span class="pulse-dot"></span><b id="connectionLabel">WAITING FOR HARDWARE</b><small id="connectionDetail">No sensor packets received</small><small>HW <em id="hardwareStatus">NOT CONNECTED</em></small></div>
+  </nav>
+
+  <section class="col">
+    <header class="bar">
+      <div><h1 id="viewTitle">Flood monitoring overview</h1><p id="viewSub">Live gateway state, field-node telemetry and system health</p></div>
+      <div class="bar-right">
+        <div class="stamp"><span id="clock">--:--:--</span><small id="modelTime">12 OCT 2026</small></div>
+        <span class="mode-pill wx off" id="wxPill"><i></i><span id="wxLabel">WX · ARCHIVE</span></span><span class="mode-pill"><i></i><span id="modeLabel">NO SENSOR DATA</span></span>
+        <button class="ghost" id="exportBtn" title="Export telemetry CSV (Numpad .)">Export CSV</button>
+        <button class="solid" id="resetBtn" title="Reset scenario (Numpad 0)">Reset</button>
+      </div>
+    </header>
+
+    <div class="deck" id="deck">
+      <!-- 1 OVERVIEW -->
+      <section class="view active v-overview" id="overviewView" aria-label="Flood monitoring overview">
+        <div class="overview-scroll">
+          <section class="overview-kpis" aria-label="System overview">
+            <article class="overview-kpi risk-kpi"><span>FLOOD ASSESSMENT</span><b id="ovFloodState">WAITING</b><small id="ovFloodDetail">Waiting for gateway snapshot</small></article>
+            <article class="overview-kpi"><span>RAIN SENSOR · FLOOD01</span><b id="ovRainValue">—</b><small id="ovRainDetail">Raw ADC · calibration unverified</small></article>
+            <article class="overview-kpi"><span>ACTIVE ALERTS</span><b id="ovAlertCount">—</b><small id="ovAlertDetail">From current assessment</small></article>
+            <article class="overview-kpi"><span>FIELD NODES</span><b id="ovNodes">—</b><small>FLOOD01 · GAS01 installed</small></article>
+            <article class="overview-kpi"><span>GATEWAY</span><b id="ovGateway">UNKNOWN</b><small id="ovGatewayDetail">Raspberry Pi · serial link</small></article>
+          </section>
+          <section class="overview-nodes" aria-label="Field node telemetry">
+            <article class="overview-panel node-panel">
+              <header><div><span class="eyebrow">ESP32 · FLOOD01</span><h2>Rain &amp; load-cell telemetry</h2></div><span id="ovRainStatus" class="state-pill unknown">UNKNOWN</span></header>
+              <div class="node-primary"><b id="ovRainRaw">—</b><span>raw ADC</span></div>
+              <p id="ovRainQuality">Rain sensor calibration is unverified; no rainfall rate is reported.</p>
+              <div class="node-facts"><div><span>Water level / distance</span><b>Not reported</b></div><div><span>Turbidity</span><b>Not installed</b></div><div><span>Packet age</span><b id="ovRainAge">—</b></div><div><span>Packet loss</span><b id="ovRainLoss">—</b></div><div><span>LoRa RSSI</span><b id="ovRainRssi">Not reported</b></div><div><span>HX711 load cell</span><b id="ovPressure">Raw count only</b></div></div>
+            </article>
+            <article class="overview-panel node-panel">
+              <header><div><span class="eyebrow">ESP32 · GAS01</span><h2>Environmental &amp; structural</h2></div><span id="ovGasStatus" class="state-pill unknown">UNKNOWN</span></header>
+              <div class="node-primary"><b id="ovSoilRaw">—</b><span id="ovSoilUnit">raw ADC</span></div>
+              <p id="ovGasQuality">Soil calibration is unverified. Gas and motion readings are shown only when present.</p>
+              <div class="node-facts"><div><span>Gas raw</span><b id="ovGasRaw">—</b></div><div><span>Gas alert</span><b id="ovGasAlert">Unknown</b></div><div><span>Motion (raw XYZ)</span><b id="ovMotion">Not reported</b></div><div><span>Packet age</span><b id="ovGasAge">—</b></div><div><span>Packet loss</span><b id="ovGasLoss">—</b></div><div><span>Turbidity / pressure</span><b>Not reported</b></div></div>
+            </article>
+          </section>
+          <section class="overview-lower">
+            <article class="overview-panel flow-panel">
+              <header><div><span class="eyebrow">DATA PATH</span><h2>System flow &amp; device health</h2></div><span class="subtle" id="ovFreshness">No snapshot</span></header>
+              <div class="system-flow" aria-label="ESP32 sensors transmit over LoRa to the TTGO receiver, Raspberry Pi gateway, and dashboard API">
+                <div class="flow-step" id="flowNodes"><i>02</i><b>ESP32 nodes</b><small>FLOOD01 · GAS01</small></div><span class="flow-arrow">→</span>
+                <div class="flow-step" id="flowLora"><i>RF</i><b>LoRa 433 MHz</b><small id="ovLora">Link status unknown</small></div><span class="flow-arrow">→</span>
+                <div class="flow-step" id="flowGateway"><i>Pi</i><b>TTGO → Pi</b><small id="ovSerial">Serial status unknown</small></div><span class="flow-arrow">→</span>
+                <div class="flow-step" id="flowApi"><i>API</i><b>Dashboard API</b><small id="ovApi">Waiting for response</small></div>
+              </div>
+              <div class="health-grid"><div><span>Drain sensor</span><b id="ovDrain">NOT INSTALLED</b></div><div><span>River sensor</span><b id="ovRiver">NOT INSTALLED</b></div><div><span>Camera</span><b id="ovCameraHealth">NOT CONFIGURED</b></div><div><span>Gemini analysis</span><b id="ovAiHealth">NOT CONFIGURED</b></div></div>
+            </article>
+            <article class="overview-panel unavailable-panel">
+              <header><div><span class="eyebrow">MEDIA &amp; INSPECTION</span><h2>Camera &amp; AI analysis</h2></div><div class="media-controls"><button class="solid" id="ovAnalyzeButton" type="button" disabled>Analyze latest Pi frame</button><span id="ovMediaStatus" class="state-pill unknown">WAITING FOR PI</span></div></header>
+              <div class="camera-frame"><img id="ovCameraImage" alt="Latest drainage camera capture from Raspberry Pi" hidden><div id="ovCameraPlaceholder" class="media-empty"><span aria-hidden="true">▧</span><b id="ovCameraPlaceholderTitle">Waiting for Raspberry Pi camera</b><p id="ovCameraPlaceholderText">The Pi camera publisher will send its latest JPEG frame to the gateway.</p></div></div>
+              <div class="unavailable-meta"><span>Camera state</span><b id="ovCameraState">Not configured</b><span>Capture time</span><b id="ovCaptureTime">Not provided</b><span>Event / trigger</span><b id="ovCaptureEvent">Not provided</b></div>
+              <div class="ai-result"><div class="ai-result-head"><span id="ovAiLabel">GEMINI INSPECTION</span><b id="ovAiVerdict">Unavailable</b></div><div class="ai-result-facts"><div><span>Confidence · not certainty</span><b id="ovAiConfidence">Unknown</b></div><div><span>Action required</span><b id="ovAiAction">Unknown</b></div></div><p id="ovAiReasoning">No AI analysis is available in the current backend.</p><p id="ovAiRecommendation" hidden></p></div>
+            </article>
+            <article class="overview-panel events-panel">
+              <header><div><span class="eyebrow">TWIN EVENT STORE</span><h2>Recent system events</h2></div><span class="subtle" id="ovEventSource">Waiting</span></header>
+              <div id="ovEvents" class="overview-events" aria-live="polite"><p class="empty-note">Waiting for event data from the gateway.</p></div>
+            </article>
+          </section>
+        </div>
+      </section>
+
+      <!-- 2 TWIN -->
+      <section class="view v-twin" aria-hidden="true"></section>
+
+      <!-- 2 NODES -->
+      <section class="view v-nodes">
+        <div class="tabs" id="nodeTabs">
+          <button data-node="RAIN-01"><i style="background:#d99a37"></i>Rain</button>
+          <button data-node="DRAIN-01" class="selected"><i style="background:#bd6845"></i>Drain</button>
+          <button data-node="AREA-01"><i style="background:#70945d"></i>Low area</button>
+          <button data-node="RIVER-01"><i style="background:#438c7b"></i>River</button>
+          <button data-node="PI-EDGE"><i style="background:#647a5b"></i>Pi gateway</button>
+          <button data-node="ALERT-01"><i style="background:#c9a24a"></i>Speaker</button>
+        </div>
+        <article class="card cut big-read">
+          <div class="c-head"><h2 id="inspectorTitle">Drainage node</h2><span class="status-tag online" id="inspectorStatus">● ONLINE</span></div>
+          <div class="reading"><div><span id="primaryLabel">WATER LEVEL</span><div class="num"><b id="primaryValue">8.1</b><small id="primaryUnit">cm</small></div></div><div class="glyph" id="primaryGlyph">≈</div></div>
+          <div class="temp-row"><span>Node temperature</span><b id="nodeTemp">29.2°C</b><span id="tempState">● NOMINAL</span></div>
+        </article>
+        <div class="stack">
+          <article class="card cut grow"><div class="c-head"><h2>Sensor readings</h2></div><div class="sensor-list" id="sensorList"></div></article>
+          <article class="card cut"><div class="c-head"><h2>Route integrity</h2><span class="tiny" id="routeCount">3 HOPS</span></div><div class="route-diagram" id="routeDiagram"></div><div class="route-foot" id="routeMessage">Auto-route enabled</div></article>
+        </div>
+      </section>
+
+      <!-- 3 LAB -->
+      <section class="view v-lab">
+        <article class="card cut controls">
+          <div class="ctl"><div class="ctl-l"><label for="rainControl">Rainfall intensity</label><b id="rainControlVal">18 mm/h</b></div><input id="rainControl" type="range" min="0" max="120" value="18"><div class="rl"><span>Dry</span><span>Extreme</span></div></div>
+          <div class="ctl"><div class="ctl-l"><label for="blockControl">Drain blockage</label><b id="blockControlVal">12%</b></div><input id="blockControl" type="range" min="0" max="100" value="12"><div class="rl"><span>Clear</span><span>Fully blocked</span></div></div>
+          <div class="ctl"><div class="ctl-l"><label for="riverControl">River boundary level</label><b id="riverControlVal">12.4 cm</b></div><input id="riverControl" type="range" min="0" max="50" step=".5" value="12.5"><div class="rl"><span>Normal</span><span>Overflow</span></div></div>
+        </article>
+        <div class="tgrid">
+          <button class="scenario-toggle" id="overflowToggle"><b>Land overflow</b><small>Force surface inundation</small><i class="toggle-track"></i></button>
+          <button class="scenario-toggle" id="sensorFaultToggle"><b>Sensor fault</b><small>Inject inconsistent reading</small><i class="toggle-track"></i></button>
+          <button class="scenario-toggle" id="nodeFailureToggle"><b>Node failure</b><small>Simulate mesh rerouting</small><i class="toggle-track"></i></button>
+          <button class="scenario-toggle" id="internetToggle"><b>Internet loss</b><small>Edge processing continues</small><i class="toggle-track"></i></button>
+          <div class="explain"><p id="explainTxt">Rainfall, soil moisture and gas readings appear here only when received from real sensor hardware.</p><button class="solid" id="runStormBtn" disabled>Live hardware only</button></div>
+        </div>
+      </section>
+
+      <!-- 4 TREND -->
+      <section class="view v-trend">
+        <article class="card cut chart-card">
+          <div class="c-head"><h2 id="trendTitle">Last 60 seconds</h2><div class="chart-legend"><span><i class="river-line"></i><em id="legA" style="font-style:normal">River level</em></span><span><i class="drain-line"></i><em id="legB" style="font-style:normal">Drain level</em></span></div></div>
+          <div class="chart-wrap"><svg id="trendChart" viewBox="0 0 740 180" preserveAspectRatio="xMidYMid meet"></svg></div>
+          <div class="chart-axis" id="trendAxis"><span>−60 s</span><span>−40 s</span><span>−20 s</span><span>now</span></div>
+        </article>
+        <div class="stats" id="statsRow"></div>
+        <div class="chain">
+          <div class="link"><b>Rainfall</b><small>14 m</small></div><div class="link"><b>Drainage</b><small>11 m</small></div><div class="link"><b>Low area</b><small>7 m</small></div><div class="link"><b>River</b><small>4 m</small></div>
+        </div>
+      </section>
+
+      <!-- 5 ALERTS -->
+      <section class="view v-alerts">
+        <article class="card cut"><div class="c-head"><h2>Alert register</h2><span class="tiny" id="alertCount">0 ACTIVE</span></div><div class="alert-filters" role="group" aria-label="Filter alerts"><button type="button" data-alert-filter="all" aria-pressed="true">All</button><button type="button" data-alert-filter="warn" aria-pressed="false">Warning</button><button type="button" data-alert-filter="critical" aria-pressed="false">Critical</button><small>Temporary page-only state; not saved to the gateway.</small></div><div id="alertList" class="alert-list"></div></article>
+        <article class="card cut"><div class="c-head"><h2>Event log</h2></div><div id="eventList" class="event-list"></div></article>
+      </section>
+      <!-- 6 INFER -->
+      <section class="view v-inf">
+        <div class="inf3" id="infGrid"></div>
+        <article class="card cut"><div class="c-head"><h2>Sensor trust</h2><span class="tiny">BATTERY · RSSI · LOSS · FAULTS</span></div><div class="tbars" id="tBars"></div><div class="analog" id="analogTxt"></div></article>
+      </section>
+
+      <!-- 7 SKY -->
+      <section class="view v-sky">
+        <article class="card cut wxsrc"><div class="c-head"><h2>Conditions now</h2><span class="tiny" id="wxSrc">ARCHIVE</span></div><div class="wxrows" id="wxRows"></div><button class="solid" id="syncBtn">Drive twin with this rain</button></article>
+        <div class="skyr">
+          <article class="card cut chartc"><div class="c-head"><h2>Rainfall and cloud cover</h2><div class="chart-legend"><span><i style="background:#438c7b"></i>Recorded rain</span><span><i style="background:#e3b36a"></i>Outlook rain</span><span><i style="background:#202820"></i>Cloud cover</span></div></div><div class="chart-wrap"><svg id="wxChart" viewBox="0 0 900 230" preserveAspectRatio="xMidYMid meet"></svg></div></article>
+          <article class="card cut"><div class="c-head"><h2>Archive storm library</h2><span class="tiny">SYNTHETIC SAMPLES · ILLUSTRATIVE ONLY</span></div><div class="lib" id="lib"></div></article>
+        </div>
+      </section>
+
+      <!-- 8 REASON -->
+      <section class="view v-reason" id="reasonView">
+        <div class="rs-top" id="rsTop"></div>
+        <div class="rs-main">
+          <article class="card cut rs-graph"><div class="c-head"><h2>Inference network</h2><span class="tiny" id="rsGraphTag">EVIDENCE → RULES → CONCLUSIONS · click any node for its proof</span></div><div class="rs-legend" id="rsLegend"></div><div class="rs-svgwrap"><svg id="rsSvg" viewBox="0 0 760 430" preserveAspectRatio="xMidYMid meet"></svg></div></article>
+          <div class="rs-side">
+            <article class="card cut"><div class="c-head"><h2 id="rsProofTitle">Why? (backward chaining)</h2><span class="tiny" id="rsProofTag">GOAL-DRIVEN</span></div><div class="rs-proof" id="rsProof">Click a node in the network or an alert to see its proof.</div></article>
+            <article class="card cut"><div class="c-head"><h2>Best explanation</h2><span class="tiny">RELATIVE SUPPORT · NOT PROBABILITY</span></div><div id="rsHyp"></div></article>
+          </div>
+        </div>
+        <div class="rs-bot">
+          <article class="card cut"><div class="c-head"><h2>Forward-chaining trace</h2><span class="tiny" id="rsTraceTag"></span></div><div class="rs-trace" id="rsTrace"></div></article>
+          <article class="card cut"><div class="c-head"><h2>Decision history</h2><span class="tiny">SQLITE · CLICK TO REPLAY</span></div><div id="rsTimeline"></div></article>
+          <article class="card cut"><div class="c-head"><h2>What if…? (counterfactual)</h2><span class="tiny" id="rsCfTag">MODEL EXPERIMENT</span></div><div id="rsCf"></div></article>
+        </div>
+      </section>
+      <!-- persistent twin dock: full on card 1, mini on cards 2-7 -->
+      <div class="dock">
+        <div class="stage" id="twinStage">
+          <div class="frame" id="frame">
+            <img id="isoImg" src="assets/isometric.jpg" alt="Isometric cutaway of the AquaMesh district" draggable="false">
+            <canvas id="overlay"></canvas>
+            <span class="dock-tag"><kbd>1</kbd>Expand twin</span>
+            <div class="legend"><span><i style="background:#d99a37"></i>Rain</span><span><i style="background:#bd6845"></i>Drain</span><span><i style="background:#70945d"></i>Low area</span><span><i style="background:#438c7b"></i>River</span><span><i style="background:#647a5b"></i>Gateway</span></div>
+            <div class="map-alert" id="mapAlert"><i id="mapAlertDot"></i><div><b id="mapAlertTitle">Scenario alert</b><small id="mapAlertText">No active hazard detected</small></div></div>
+          </div>
+        </div>
+        <aside class="hud">
+          <article class="tile cut"><div class="t-top"><span id="riskLabel">Composite flood risk</span><em class="risk-badge" id="riskBadge">LOW</em></div><div class="t-val"><strong id="riskValue">18</strong><small>/100</small></div><div class="seg"><i id="riskMeter" style="width:18%"></i></div><div class="t-foot"><span id="riskNote">Conditions stable</span><span id="riskTrend">→ 0 pts</span></div><div class="t-sub" id="subRisk"></div></article>
+          <article class="tile cut"><div class="t-top"><span>Network availability</span></div><div class="t-val"><strong id="networkValue">100</strong><small>%</small></div><div class="seg g"><i id="networkMeter" style="width:100%"></i></div><div class="t-foot"><span id="onlineCount">6 of 6 online</span></div><div class="t-sub" id="subNet"></div></article>
+          <article class="tile cut"><div class="t-top"><span id="rainLabel">Rainfall intensity</span></div><div class="t-val"><strong id="rainValue">18.4</strong><small id="rainUnit">mm/h</small></div><div class="spark" id="rainSpark"></div><div class="t-foot"><span>RAIN-01</span><span id="rainTrend">● Simulated</span></div><div class="t-sub" id="subRain"></div></article>
+          <article class="tile cut"><div class="t-top"><span id="riverLabel">River level</span></div><div class="t-val"><strong id="riverValue">12.4</strong><small id="riverUnit">cm</small></div><div class="spark teal" id="riverSpark"></div><div class="t-foot"><span id="riverNode">RIVER-01</span><span id="riverTrend">↗ +0.3 cm/min</span></div><div class="t-sub" id="subRiver"></div></article>
+        </aside>
+      </div>
+    </div>
+
+    <footer class="hint">
+      <div class="pager" id="pager"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="keys-hint"><kbd>1</kbd>–<kbd>9</kbd> jump <kbd>+</kbd><kbd>−</kbd> shift <kbd>0</kbd> reset <kbd>Enter</kbd> storm <kbd>.</kbd> export</div>
+      <div id="footerTime">SYSTEM READY</div>
+    </footer>
+  </section>
+</div>
+<div class="toast" id="toast"><span>✓</span><b>Scenario updated</b><small>Simulation state recalculated.</small></div>
+<script src="data/weather-archive.js"></script>
+<script src="app.js"></script>
+<script src="reasoning.js"></script>
+<script src="control-center.js"></script>
+</body></html>
